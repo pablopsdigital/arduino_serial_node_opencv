@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto conexión serial con arduino, node y socketIO</title>
+</head>
+
+<body>
+    <h1>Prueba conexión serial con Arduino</h1>
+    <canvas id="canvasContainer"></canvas>
+
+    <!--Importar libreria socket.io y chartjs-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js" charset="utf-8"></script>
+    <script src="/socket.io/socket.io.js" charset="utf-8"></script>
+    <script>
+
+        //Crear socket cliente
+        const socketCliente = io();
+
+        //===================================================================
+        //Crear gráfica
+        //===================================================================
+        //Asignar el div contenedor
+        var ctx = document.getElementById('canvasContainer').getContext('2d');
+
+        //Crear un nuevo gráfico
+        var grafica = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Serial'],
+                datasets: [{
+                    label: "Serial con datos de Arduino",
+                    backgroundColor: "rgb(52,73,94)",
+                    borderColor: 'rgb(41, 128, 185)',
+                    data: []
+                }]
+            },
+            options: {}
+        });
+
+
+        //Recibir los datos del servidor y los pasamos a la gráfica
+        let contadorRepintado = 0;
+        socketCliente.on('arduino:data', function (dataSerial) {
+            console.log(dataSerial);
+
+            //Enviando los datos al data de la gráfica
+            grafica.data.labels.push(contadorRepintado);
+
+            //Recorrer con un bucle el dataset enviado
+            grafica.data.datasets.forEach(dataset => {
+                //Añadimos el dato del serial a data de chart
+                dataset.data.push(dataSerial.value);
+            });
+            //Incrementar el contador por cada nuevo dato
+            contadorRepintado++;
+            grafica.update();
+
+        })
+
+    </script>
+
+</body>
+
+</html>
